@@ -9,7 +9,7 @@ if __name__ == '__main__':
 	# df = cl.geocoder(df)
 	df = cl.feature_engineering(df)
 	# df = cl.k_minimizer(df)
-	df = cl.map_minimizer(df)
+	# df = cl.map_minimizer(df)
 
 	print(df)
 	# df.to_csv('../../Data/ProductionData/cleaned_geospatial_data.csv')

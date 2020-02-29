@@ -19,16 +19,22 @@ app=dash.Dash(__name__)
 
 # reading the dataset for now going to create an uploader and have it converted into pandas dataframe
 
-
-# df = pd.read_csv('../../Data/OutsideData/formatted_lat_long_for_Kmeans.csv')
-# df = pd.read_csv('../../Data/OutsideData/smaller_data_for_Kmeans.csv')
-# df = pd.read_csv('../../Data/ICTO_Datasets/address_ICTO_Datasets.csv')
-# df = pd.read_csv('../../Data/ICTO_Datasets/cleaned_ICTO_Datasets.csv')
+# read in dataset
 df = pd.read_csv('../../Data/ICTO_Datasets/ICTO_Datasets.csv')
 
+# initial cleaner
 df = cln.full_cleaner(df)
+# create a copy for k means scatter plot
 df_scatter = df.copy(deep=True)
+
+# format the data for k means clustering scatterplot
+df_scatter = cln.geocoder(df_scatter)
+df_scatter = cln.k_minimizer(df_scatter)
+
+# format the data for map plot
 df = cln.feature_engineering(df)
+df = cln.map_minimizer(df)
+
 
 selection = list(df.columns)
 
@@ -197,7 +203,7 @@ def main():
 	    	),
 	])
 	print('Loading Server...')
-	app.run_server(debug=True)
+	app.run_server(debug=False)
 	
 	# print(df.head())
 	
