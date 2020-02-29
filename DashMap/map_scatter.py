@@ -3,30 +3,49 @@
 import dash
 import dash_core_components as dcc # for accessing interactive data visualization with plotly.js
 import dash_html_components as html # for accessing html elements h1 h2
+import plotly
 import plotly.graph_objs as go # for designing Chloropleth map
-# import plotly.express as px 
 import pandas as pd
 import numpy as np
 import json
-
+from urllib.request import urlopen
+from production_cleaner import Cleaner as cln
 # creating dash object for server
 # external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 # app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 app=dash.Dash(__name__)
 
+
+# reading the dataset for now going to create an uploader and have it converted into pandas dataframe
+
+
 # df = pd.read_csv('../../Data/OutsideData/formatted_lat_long_for_Kmeans.csv')
 # df = pd.read_csv('../../Data/OutsideData/smaller_data_for_Kmeans.csv')
-df=pd.read_csv('../../Data/OutsideData/smaller_data_for_Kmeans.csv', dtype={'PostalCode':str})
+# df = pd.read_csv('../../Data/ICTO_Datasets/address_ICTO_Datasets.csv')
+# df = pd.read_csv('../../Data/ICTO_Datasets/cleaned_ICTO_Datasets.csv')
+df = pd.read_csv('../../Data/ICTO_Datasets/ICTO_Datasets.csv')
+
+df = cln.full_cleaner(df)
+df_scatter = df.copy(deep=True)
+df = cln.feature_engineering(df)
 
 selection = list(df.columns)
 
 mapbox_accesstoken = 'pk.eyJ1IjoiY3JhaWdtYXJpYW5pIiwiYSI6ImNrNnk2bWQ0NjBxNmMzbG84OGpsa2IwMnQifQ.Hy10gEAc9eolUbu_lLgTMQ'
 
-addresses = df['Address'].str.title().tolist()
+# mapbox_accesstoken = ''
 
-with open('../../Data/OutsideData/united_states.json') as json_data:
-    US_data = json.load(json_data)
+
+addresses = df['Address'].str.title().tolist()
+# addresses = df['City'].str.title().tolist()
+
+# with open('../../Data/OutsideData/united_states.json') as json_data:
+#     US_data = json.load(json_data)
+with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
+	# print('Response: {}'.format(response))
+	US_data = json.load(response)
+	# print('US_data {}'.format(US_data))
 
 pl_deep=[[0.0, 'rgb(253, 253, 204)'],
          [0.1, 'rgb(201, 235, 177)'],
@@ -61,10 +80,9 @@ def map_trace(layout):
 	for attribute in selection:
 		trace_map.append(go.Choroplethmapbox(
 			geojson=US_data,
-			# locations=df['PostalCode'].tolist(),
+			locations=df['PostalCode'].tolist(),
 			# locations=df['Index'].tolist(),
-			# locations=df['States'].tolist(),
-			locations=df.States,
+			# locations=df['State'].tolist(),
 			z = df[attribute].tolist(),
 			colorscale=pl_deep,
 			text=addresses,
@@ -73,8 +91,8 @@ def map_trace(layout):
 				ticklen=3),
 			marker_line_width=0,
 			marker_opacity=0.7,
-			visible=False
-			# subplot='mapbox1'
+			visible=False,
+			subplot='mapbox1'
 			))
 
 	trace_map[0]['visible'] = True
@@ -131,12 +149,11 @@ def layout_setup():
     	autosize = True,
 
     	mapbox1 = dict(
-			domain = {'x': [0.3, 1],'y': [0, 1]},
+			domain = {'x': [0, 1],'y': [0, 1]},
 			center = dict(lat=38, lon=-97),
 			zoom = 3,
 	        accesstoken = mapbox_accesstoken, 
 	      	),
-
 
 		xaxis={
 			'zeroline': False,
@@ -180,7 +197,7 @@ def main():
 	    	),
 	])
 	print('Loading Server...')
-	app.run_server(debug=False)
+	app.run_server(debug=True)
 	
 	# print(df.head())
 	
