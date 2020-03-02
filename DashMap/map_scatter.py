@@ -10,6 +10,7 @@ import numpy as np
 import json
 from urllib.request import urlopen
 from production_cleaner import Cleaner as cln
+from clustering import MeansLatLong as ml
 # creating dash object for server
 # external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -18,8 +19,6 @@ app=dash.Dash(__name__)
 
 
 # reading the dataset for now going to create an uploader and have it converted into pandas dataframe
-
-# read in dataset
 df = pd.read_csv('../../Data/ICTO_Datasets/ICTO_Datasets.csv')
 
 # initial cleaner
@@ -31,27 +30,20 @@ df_scatter = df.copy(deep=True)
 df_scatter = cln.geocoder(df_scatter)
 df_scatter = cln.k_minimizer(df_scatter)
 
+selection_scatter = list(df_scatter.columns)
+
 # format the data for map plot
 df = cln.feature_engineering(df)
 df = cln.map_minimizer(df)
-
 
 selection = list(df.columns)
 
 mapbox_accesstoken = 'pk.eyJ1IjoiY3JhaWdtYXJpYW5pIiwiYSI6ImNrNnk2bWQ0NjBxNmMzbG84OGpsa2IwMnQifQ.Hy10gEAc9eolUbu_lLgTMQ'
 
-# mapbox_accesstoken = ''
-
-
 addresses = df['Address'].str.title().tolist()
-# addresses = df['City'].str.title().tolist()
 
-# with open('../../Data/OutsideData/united_states.json') as json_data:
-#     US_data = json.load(json_data)
 with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
-	# print('Response: {}'.format(response))
 	US_data = json.load(response)
-	# print('US_data {}'.format(US_data))
 
 pl_deep=[[0.0, 'rgb(253, 253, 204)'],
          [0.1, 'rgb(201, 235, 177)'],
@@ -65,11 +57,38 @@ pl_deep=[[0.0, 'rgb(253, 253, 204)'],
          [0.9, 'rgb(55, 44, 80)'],
          [1.0, 'rgb(39, 26, 44)']]
 
-layout = None
+def scatter_trace_k(layout):
+	trace_k_scatter = []
+	global df_scatter
+	global app
+
+	# trace_k_scatter.append(go.Scatter(
+
+	# 	))
 
 # lat long grid for k means clustering
-def scatter_trace():
-	pass
+def scatter_trace(layout):
+	trace_scatter = []
+
+	global df_scatter
+	global app
+
+	trace_scatter.append(go.Scatter(
+			x=df_scatter['Latitude'],
+			y=df_scatter['Longitude'],
+			mode='markers',
+			# text=df_scatter,
+			marker=dict(
+            	color='rgba(91, 207, 135, 0.3)',
+            	line=dict(
+                	color='rgba(91, 207, 135, 2.0)',
+                	width=0.5),
+        	),
+			name='Latitude vs. Longitude',
+			))
+
+	return trace_scatter
+
 
 # trace for the choropleth map
 def map_trace(layout):
@@ -87,8 +106,6 @@ def map_trace(layout):
 		trace_map.append(go.Choroplethmapbox(
 			geojson=US_data,
 			locations=df['PostalCode'].tolist(),
-			# locations=df['Index'].tolist(),
-			# locations=df['State'].tolist(),
 			z = df[attribute].tolist(),
 			colorscale=pl_deep,
 			text=addresses,
@@ -103,6 +120,7 @@ def map_trace(layout):
 
 	trace_map[0]['visible'] = True
 	return trace_map 
+
 
 
 # change layout based on drop down menu selection
@@ -137,6 +155,41 @@ def layout_update(layout):
 	        )]))
 	return layout
 
+def layout_setup2():
+	global df_scatter
+	global app
+	global selection_scatter
+
+	layout2 = go.Layout(
+		title={'text':'Latitude vs Longitude',
+			'font': {'size':28,
+			'family':'Arial'}},
+		width=1500,
+		height=500,
+		autosize = False,
+		xaxis={
+			'title':'Latitude',
+			'zeroline': False,
+	        "showline": False,
+	        "showticklabels":True,
+	        'showgrid':True,
+	        'domain': [0, 1],
+	        'side': 'right',
+	        # 'anchor': 'x2',
+	        },
+	    yaxis={
+	    	'title':'Longitude',
+	    	'domain': [0, 1],
+	        # 'anchor': 'y2',
+	        'autorange': 'reversed',
+	     	},
+
+	    margin=dict(l=100, r=20, t=70, b=70),
+    	paper_bgcolor='rgb(204, 204, 204)',
+    	plot_bgcolor='rgb(204, 204, 204)',
+
+		)
+	return layout2
 # initialize layout
 def layout_setup():
 	global mapbox_accesstoken
@@ -186,27 +239,43 @@ def main():
 	global app
 	# global layout
 	layout = layout_setup()
-	# layout_setup()
-	
-	trace_map = map_trace(layout)
-	layout = layout_update(layout)
-	# print(layout)
-	# print(trace_map)
-	fig=go.Figure(data=trace_map, layout=layout)
+	layout2 = layout_setup2()
 
-	app.layout = html.Div(children=[
+	trace_map = map_trace(layout)
+	trace_scatter = scatter_trace(layout2)
+	trace_k_scatter = scatter_trace_k(layout2)
+	layout = layout_update(layout)
+
+	fig=go.Figure(data=trace_map, layout=layout)
+	# fig=go.Figure(data=trace_map + trace_scatter, layout=layout)
+	fig2=go.Figure(data=trace_scatter, layout=layout2)
+	app.layout = html.Div([
 		html.H1(children=''),
 
-	    dcc.Graph(
-	        id='1',
+		html.Div([
+			dcc.Graph(
+	        id='graph_1',
 	        figure=fig
 	    	),
+			]),
+
+		# plot for the k means clustering graph
+		# 1) plot all lat long points on graph with color coded z label and x and y axis labels
+		# 2) create clustering class that finds most optimal number of clusters and creates them
+		# 3) display your clusters on the scatter plot
+		# 4) OPTIONAL - create an input of type text for the number of k's for the user to select
+		# 5) Try adding labels so they see other data besides lats and longs
+	    html.Div([
+	    	dcc.Graph(
+			id='graph_2',
+			figure=fig2
+			)
+	    	])
+	    
 	])
+
 	print('Loading Server...')
 	app.run_server(debug=False)
 	
-	# print(df.head())
-	
 if __name__ == '__main__':	
-	# app.run_server(debug=False)
 	main()

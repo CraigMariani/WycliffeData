@@ -78,6 +78,6 @@ class Cleaner:
 	# where categorical attributes are not used 
 	def k_minimizer(df):
 		# print(df.shape)
-		df = df.select_dtypes(exclude=['object'])
+		df = df.select_dtypes(exclude=['object', 'datetime'])
 		# print(df.shape)
 		return df
