@@ -8,13 +8,46 @@ import pandas as pd
 
 class MeansLatLong():
 	highest_score = 0
-	# call events with one method
+
+	# for running the actual clustering in production
+	# only normalizes data and performs clustering, no checking/calculating scores
 	def start(df, n_clusters):
 		X = MeansLatLong.normalize_data(df)
 		y_out, k_means, model = MeansLatLong.cluster(n_clusters, X, df.shape[0])
+		centroids = model.cluster_centers_
+		
+		# df_centroids = format(df.columns, centroids)
+		df_centroids = MeansLatLong.to_coordinates(df.columns, centroids)
+		return df_centroids
+
+	# format the centroids into a dataframe
+	# def format(clmns, centroids):
+	def to_coordinates(clmns, centroids):
+		col_names = list(clmns)
+		col_names.append('prediction')
+		
+		# zip columns
+		Z = [np.append(A, index) for index, A in enumerate(centroids)]
+
+		# convert to dataframe
+		df_centroids = pd.DataFrame(Z, columns=col_names)
+		# df_centroids = pd.DataFrame(centroids, columns=col_names)
+		df_centroids['prediction'] = df_centroids['prediction'].astype(int)
+
+		return df_centroids 
+
+	# call events with one method
+	# for testing the number of clusters in the scatter plot
+	def test_start(df, n_clusters):
+		X = MeansLatLong.normalize_data(df)
+
+		y_out, k_means, model = MeansLatLong.cluster(n_clusters, X, df.shape[0])
+
 		sil_score, ch_score, n_clusters, sum_squared_distances = MeansLatLong.calculate_scores(y_out,X , k_means, model)
 
-		return sil_score, ch_score, n_clusters, sum_squared_distances
+		# return sil_score, ch_score, n_clusters, sum_squared_distances, model # experimental
+		return sil_score, ch_score, sum_squared_distances # for testting
+		
 
 
 	# scale values so they are all equal importance
@@ -30,12 +63,18 @@ class MeansLatLong():
 
 		# set number of clusters for algorithm
 		k_means = KMeans(n_clusters=n_clusters)
-
+		# print(k_means)
 		# run clustering algorithm and produce a model
 		model = k_means.fit(X)
-
+		# print(model.cluster_centers_)
+		# print('*******************')
+		# print(model.cluster_centers_[:,4])
+		# print('*******************')
+		# print(model.cluster_centers_[:,5])
+		
 		# create cluster predictions store in y_out
 		y_out = k_means.predict(X)
+		# print(y_out)
 
 		return y_out, k_means, model
 
@@ -53,22 +92,5 @@ class MeansLatLong():
 		n_clusters = model.n_clusters
 		sum_squared_distances = k_means.inertia_
 		return sil_score, ch_score, n_clusters, sum_squared_distances
-
-	# test the number of cluster predictions to see if it is most optimal 
-	def test_prediction(sil_score, ch_score, n_clusters):
-		highest_n_clusters = 0
-		highest_sil_score = 0
-		highest_ch_score = 0
-
-		optimal_n_clusters = False
-
-		if ch_score > highest_ch_score and sil_score > highest_sil_score:
-			highest_n_clusters = n_clusters
-			highest_sil_score = sil_score
-			highest_ch_score = ch_score
-		else:
-			optimal_n_clusters = True
-
-		return highest_n_clusters, highest_sil_score, highest_ch_score, optimal_n_clusters
 
 

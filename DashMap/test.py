@@ -2,6 +2,7 @@ from production_cleaner import Cleaner as cl
 from clustering import MeansLatLong as ml
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
 	# read in data
@@ -24,13 +25,48 @@ if __name__ == '__main__':
 	# test clustering algorithm
 	max_clusters = df.shape[0]
 	# X = ml.normalize_data(df)
-	# n_clusters = 5
-	# y_out, k_means, model = ml.cluster(n_clusters, X, max_clusters)
-	# highest_n_clusters, highest_sil_score, highest_ch_score, optimal_n_clusters = ml.test_prediction(sil_score, ch_score, n_clusters)
+	n_clusters = 5
+	# ml.test_start(df, n_clusters)
+	df_centroids = ml.start(df, n_clusters)
 
-	sil_score, ch_score, n_clusters, sum_squared_distances = ml.start(df, 4)
+	df_centroids.to_csv('../../Data/ProductionData/centroids.csv')
 
-	print(sil_score, ch_score, n_clusters, sum_squared_distances)
+
+	### FOR FIGURING OUT OPTIMAL NUMBER OF CLUSTERS ###
+	# sil_score, ch_score, n_clusters, sum_squared_distances, model = ml.start(df, 5)
+	distances = []
+	sil_scores = []
+	ch_scores = []
+	K = range(2,15)
+	for k in K:
+		sil_score, ch_score, sum_squared_distances = ml.test_start(df, k)
+		distances.append(sum_squared_distances)
+		sil_scores.append(sil_score)
+		ch_scores.append(ch_score)
+
+	plt.plot(K, distances, 'bx-')
+	plt.xlabel('k')
+	plt.ylabel('sum_of_squared_distances')
+	plt.title('elbow method for optimal k')
+	print(plt.show())
+
+	plt.plot(K, sil_scores, 'bx-')
+	plt.xlabel('k')
+	plt.ylabel('silhouette coefficients')
+	plt.title('Highest Silhouette Coefficeient for Given K')
+	print(plt.show())
+
+	plt.plot(K, ch_scores, 'bx-')
+	plt.xlabel('k')
+	plt.ylabel('variance ratio criterion (ch score)')
+	plt.title('Highest Calinski Harabasz Score for Given K')
+	print(plt.show())
+
+
+
+
+
+	# print(sil_score, ch_score, n_clusters, sum_squared_distances)
 	def most_optimal_clusters(n_clusters):
 		global max_clusters
 		y_out, k_means, model = ml.cluster(n_clusters, X, max_clusters)

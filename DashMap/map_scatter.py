@@ -62,9 +62,24 @@ def scatter_trace_k(layout):
 	global df_scatter
 	global app
 
-	# trace_k_scatter.append(go.Scatter(
+	df_centroids = ml.start(df_scatter, 5)
+	lat_mean = df_scatter[['Latitude']].mean(axis=1)
+	long_mean = df_scatter[['Longitude']].mean(axis=1)
+	df_centroids['Latitude'] += lat_mean
+	df_centroids['Longitude'] += long_mean
 
-	# 	))
+	trace_k_scatter.append(go.Scatter(
+		x=df_centroids['Latitude'], #latitudes
+		y=df_centroids['Longitude'], #longitudes
+		name='Centroids',
+		mode='markers',
+		marker=dict(symbol='x',
+					size=12,
+					# color=range(n_clusters))
+					color='rgba(255,20,20)')
+		))
+
+	return trace_k_scatter
 
 # lat long grid for k means clustering
 def scatter_trace(layout):
@@ -248,7 +263,7 @@ def main():
 
 	fig=go.Figure(data=trace_map, layout=layout)
 	# fig=go.Figure(data=trace_map + trace_scatter, layout=layout)
-	fig2=go.Figure(data=trace_scatter, layout=layout2)
+	fig2=go.Figure(data=trace_scatter + trace_k_scatter, layout=layout2)
 	app.layout = html.Div([
 		html.H1(children=''),
 

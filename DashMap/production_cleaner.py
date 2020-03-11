@@ -79,5 +79,4 @@ class Cleaner:
 	def k_minimizer(df):
 		# print(df.shape)
 		df = df.select_dtypes(exclude=['object', 'datetime'])
-		# print(df.shape)
 		return df
