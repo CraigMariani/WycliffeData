@@ -21,7 +21,7 @@ if __name__ == '__main__':
 	df.to_csv('../../Data/ProductionData/cleaned_geospatial_data.csv')
 	# print(df.shape)
 
-
+	print('finsihedformating data')
 	# test clustering algorithm
 	max_clusters = df.shape[0]
 	# X = ml.normalize_data(df)

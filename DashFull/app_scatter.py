@@ -1,0 +1,1 @@
+# scatter plot of latitudes and longitudes from k means clustering
