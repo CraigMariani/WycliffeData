@@ -117,10 +117,11 @@ def map_trace(layout):
 	global pl_deep
 	global app
 	
+	print(df.head())
 	for attribute in selection:
 		trace_map.append(go.Choroplethmapbox(
 			geojson=US_data,
-			locations=df['PostalCode'].tolist(),
+			locations=df['PostalCode_y'].tolist(),
 			z = df[attribute].tolist(),
 			colorscale=pl_deep,
 			text=addresses,

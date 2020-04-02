@@ -25,7 +25,7 @@ class Cleaner:
 		indexNames = df[ df['Country'] != 'United States of America'].index
 		df.drop(indexNames, inplace=True)
 
-		df = df.drop(columns='Index')
+		# df = df.drop(columns='Index')
 
 		df['Index'] = np.arange(df.shape[0])
 
@@ -48,6 +48,8 @@ class Cleaner:
 			# df['ProjectDurationInDays'] = df['ProjectDurationInDays'].astype('datetime64').astype(int).astype(float)
 			# print(splitdays)
 			# df['ProjectDurationInDays'] = pd.to_datetime64(df['ProjectDurationInDays'])
+			# print('Project Duration')
+			# print(df['ProjectDurationInDays'])
 		except KeyError:
 			print('No date-time values given for feature "TimePassed"')
 
@@ -70,6 +72,7 @@ class Cleaner:
 
 				Zip_Codes.append(code_num[0])
 
+			df = df.drop(columns='PostalCode')
 			df['PostalCode'] = Zip_Codes
 			df['PostalCode'] = pd.to_numeric(df['PostalCode'])
 
