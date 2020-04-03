@@ -56,8 +56,9 @@ class Cleaner:
 		try:
 
 			# df['Address'] = df['City'] + ', ' + df['State'] + ', ' + df['Country']
-			df['Address'] = df['City'] + '-' + df['State'] + '-' + df['Country']
-
+			# df['Address'] = df['City'] + '-' + df['State'] + '-' + df['Country']
+			df = df.drop(columns='Country')
+			df['Address'] = df['City'] + '_' + df['State']
 		except KeyError:
 			print('Not enough geospatial data given for feature "Address"')
 

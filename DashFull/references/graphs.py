@@ -52,6 +52,7 @@ def parse_data(contents, filename):
     # print(type(contents))
     # print(contents)
     # print('CONTENTS^^^')
+    print(type(contents))
     content_type, content_string = contents.split(',')
     # print(content_string)
     # print(content_type)

@@ -81,37 +81,11 @@ app.layout = html.Div([
 		])
 
 def parse_data(contents, filename):
+
 	print('parsing data')
-	print('filename: {}'.format(filename))
-	print(type(contents))
-	contents = str(contents)
-	print(type(contents))
-	# print(contents)
-	print('contents^^^^')
-	# contents = list(content)
 
-	# the address column has a , that seperates the values
-	# this split is what is confusing it
-	# it is seperating the dataframe into a list but since address has more 
-	# commas it thinks that this needs to be seperated as well
-	# content_type, content_string = contents.split(',')
-	content_list = []
-	content_list = contents.split(',')
-	print(content_list)
-	print('CONTENT_LIST^^^^^^^^^^^^')
-	# exit()
-	print('Zip: {}'.format(content_list[8]))
-	print('Num_People: {}'.format(content_list[5]))
-	print('Budget: {}'.format(content_list[1]))
-	print('Mnths_Passed: {}'.format(content_list[17]))
-	# exit()
-	# print(content_string)
-	# print(content_type)
-	print(content_list)
+	content_type, content_string = contents.split(',')
 
-	# there is an error here when we decode the content
-	# try using \\ to escape commas in the text with the original "formatted_lat_long_for_Kmeans.csv"
-	# example: df = pd.read_csv('temp.csv', header=0, escapechar='\\')
 
 	decoded = base64.b64decode(content_string)
 	try:
@@ -152,29 +126,33 @@ def update_map(contents, filename):
 	global trace_map
 	global fig
 
-	# if contents:
-	# 	# parse the data uploaded into a pandas dataframe
-	# 	df = parse_data(contents, filename)
-	# 	# set up a layout based on the dataframe
-	# 	# df = pd.read_csv('../../Data/OutsideData/smaller_data_for_Kmeans.csv')
-	# 	layout = mp.layout_setup(df)
-	# 	# return a new list based on a layout	
-	# 	trace_map = mp.map_trace(layout)
-	# 	# return a new figure based on the layout and the data created 
-	# 	fig=go.Figure(data=trace_map, layout=layout)
+	if contents:
+		# parse the data uploaded into a pandas dataframe
+		contents = contents[0]
+		filename = filename[0]
+		df = parse_data(contents, filename)
+		print('showing data')
+		print(df.head())
+		# set up a layout based on the dataframe
+		# df = pd.read_csv('../../Data/OutsideData/smaller_data_for_Kmeans.csv')
+		layout = mp.layout_setup(df)
+		# return a new list based on a layout	
+		trace_map = mp.map_trace(layout)
+		# return a new figure based on the layout and the data created 
+		fig=go.Figure(data=trace_map, layout=layout)
 
-	# else:
-		# fig=go.Figure(
-		# 	data=None,
-		# 	layout=None)
+	else:
+		fig=go.Figure(
+			data=None,
+			layout=None)
 
 		
-	df = pd.read_csv('../../Data/OutsideData/smaller_data_for_Kmeans_copy.csv')
-	layout = mp.layout_setup(df)
-	# return a new list based on a layout	
-	trace_map = mp.map_trace(layout)
-	# return a new figure based on the layout and the data created 
-	fig=go.Figure(data=trace_map, layout=layout)
+	# df = pd.read_csv('../../Data/OutsideData/smaller_data_for_Kmeans_copy.csv')
+	# layout = mp.layout_setup(df)
+	# # return a new list based on a layout	
+	# trace_map = mp.map_trace(layout)
+	# # return a new figure based on the layout and the data created 
+	# fig=go.Figure(data=trace_map, layout=layout)
 
 	return fig
 
