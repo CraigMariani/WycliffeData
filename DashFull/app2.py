@@ -30,7 +30,7 @@ from urllib.request import urlopen
 from production_cleaner import Cleaner as cln
 # from app_table import Table as tbl
 # from app_graph import Graph as grph
-# from app_scatter import Scatter as scttr
+from app_scatter import Scatter as scttr
 from app_map import Map as mp
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -72,10 +72,16 @@ app.layout = html.Div([
 	        multiple=True
     	),
 
+		# choropleth map
 		dcc.Graph(
 			id = 'graph_1'
 			# id='graph_1',
 			# figure=fig
+			),
+
+		# scatter plot
+		dcc.Graph(
+			id = 'graph_2'
 			),
 		html.Div(id='output-data-upload')
 		])
@@ -94,7 +100,7 @@ def parse_data(contents, filename):
 			print('formatting csv')
 			df = pd.read_csv(
                 io.StringIO(decoded.decode('utf-8')), error_bad_lines=False).sample(frac=0.25)
-			print(df.head())
+			# print(df.head())
 
 		elif 'xls' in filename:
             # Assume that the user uploaded an excel file
@@ -109,8 +115,8 @@ def parse_data(contents, filename):
 		return html.Div([
             'There was an error processing this file.'
 		])
-	print('df data type is:')
-	print(type(df))
+	# print('df data type is:')
+	# print(type(df))
 	df.to_csv('../../Data/OutsideData/output.csv')
 	return df
 
@@ -123,36 +129,73 @@ def parse_data(contents, filename):
 # is tied to the callback, the input comes from the user uploads 
 def update_map(contents, filename):
 	print('updating map')
-	global trace_map
-	global fig
+	# global trace_map
+	# global fig
 
 	if contents:
+		#***********************************
 		# parse the data uploaded into a pandas dataframe
 		contents = contents[0]
 		filename = filename[0]
 		df = parse_data(contents, filename)
-		print('showing data')
-		print(df.head())
-		# set up a layout based on the dataframe
-		# df = pd.read_csv('../../Data/OutsideData/smaller_data_for_Kmeans.csv')
-		layout = mp.layout_setup(df)
-		# return a new list based on a layout	
-		trace_map = mp.map_trace(layout)
-		# return a new figure based on the layout and the data created 
-		fig=go.Figure(data=trace_map, layout=layout)
+		# print('showing data')
+		# print(df.head())
+
+		#**********************************
+		# Cleaning data
+		df = cln.full_cleaner(df) 
+		df = cln.feature_engineering(df)
+		df = cln.map_minimizer(df)
+
+		#**********************************
+		# Formatting data
+		layout = mp.layout_setup(df) # create a new layout from imported dataframe
+		trace_map = mp.map_trace(layout) # return a new list based on a layout
+		layout = mp.layout_update(layout) # update layout and create drop down menu
+		fig=go.Figure(data=trace_map, layout=layout) # return a new figure based on the layout and the data created 
 
 	else:
 		fig=go.Figure(
 			data=None,
 			layout=None)
 
-		
-	# df = pd.read_csv('../../Data/OutsideData/smaller_data_for_Kmeans_copy.csv')
-	# layout = mp.layout_setup(df)
-	# # return a new list based on a layout	
-	# trace_map = mp.map_trace(layout)
-	# # return a new figure based on the layout and the data created 
-	# fig=go.Figure(data=trace_map, layout=layout)
+	return fig
+
+@app.callback(Output('graph_2', 'figure'),
+	[
+		Input('upload-data', 'contents'),
+		Input('upload-data', 'filename')
+	])
+
+def update_scatter(contents, filename):
+	print('updating scatter plot')
+
+	if contents:
+		#***********************************
+		# parse the data uploaded into a pandas dataframe
+		contents = contents[0]
+		filename = filename[0]
+		df = parse_data(contents, filename)
+		# print('showing data')
+		# print(df.head())
+
+		#**********************************
+		# Cleaning data
+		df = cln.full_cleaner(df) 
+		df = cln.geocoder(df)
+		df = cln.k_minimizer(df)
+
+		#**********************************
+		# Formatting data
+		layout = scttr.layout_setup() # create a new layout for scatter plot
+		trace_scatter = scttr.scatter_trace(df) # return a new list of latittude and longitudes for scatter plot
+		trace_k_scatter = scttr.scatter_trace_k(df)# return centroids after k means clustering algorithm is completed
+		fig=go.Figure(data=trace_scatter + trace_k_scatter, layout=layout) # return a new figure based on the layout and the data created 
+
+	else:
+		fig=go.Figure(
+			data=None,
+			layout=None)
 
 	return fig
 

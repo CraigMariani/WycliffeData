@@ -121,7 +121,8 @@ def map_trace(layout):
 	for attribute in selection:
 		trace_map.append(go.Choroplethmapbox(
 			geojson=US_data,
-			locations=df['PostalCode_y'].tolist(),
+			# locations=df['PostalCode_y'].tolist(),
+			locations=df['PostalCode'].tolist(),
 			z = df[attribute].tolist(),
 			colorscale=pl_deep,
 			text=addresses,

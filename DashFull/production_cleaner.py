@@ -58,28 +58,38 @@ class Cleaner:
 			# df['Address'] = df['City'] + ', ' + df['State'] + ', ' + df['Country']
 			# df['Address'] = df['City'] + '-' + df['State'] + '-' + df['Country']
 			df = df.drop(columns='Country')
-			df['Address'] = df['City'] + '_' + df['State']
+
+			# country = np.full(
+			# 	shape=df.shape[0],
+			# 	fill_value='UnitedStatesOfAmerica',
+			# 	dtype=str)
+			# df['Country'] = country
+
+			# df['Address'] = df['City'] + '-' + df['State'] + '-' + df['Country']
+			df['Address'] = df['City'] + ', ' + df['State']
 		except KeyError:
 			print('Not enough geospatial data given for feature "Address"')
 
 		
+		#**********************************************
 
-		try:
-			zips = df['PostalCode'].tolist()
-			Zip_Codes = []
+		# try:
+		# 	zips = df['PostalCode'].tolist()
+		# 	Zip_Codes = []
 
-			for code in zips:
-				code_num = code.split('-')
+		# 	for code in zips:
+		# 		code_num = code.split('-')
 
-				Zip_Codes.append(code_num[0])
+		# 		Zip_Codes.append(code_num[0])
 
-			df = df.drop(columns='PostalCode')
-			df['PostalCode'] = Zip_Codes
-			df['PostalCode'] = pd.to_numeric(df['PostalCode'])
+		# 	df = df.drop(columns='PostalCode')
+		# 	df['PostalCode'] = Zip_Codes
+		# 	df['PostalCode'] = pd.to_numeric(df['PostalCode'])
 
-		except KeyError:
-			print('Not enough geospatial data given to format feature "PostalCode" ')
+		# except KeyError:
+		# 	print('Not enough geospatial data given to format feature "PostalCode" ')
 
+		#************************************************
 		# print(df['PostalCode'])
 		
 		
@@ -91,7 +101,8 @@ class Cleaner:
 	# great for the k means clustering algorithm 
 	# where latitude = x and longitude = y
 	def geocoder(df):
-		df_geo = pd.read_csv('../../Data/OutsideData/us-zip-code-latitude-and-longitude.csv')
+		# df_geo = pd.read_csv('../../Data/OutsideData/us-zip-code-latitude-and-longitude.csv')
+		df_geo = pd.read_csv('production_storage/us-zip-code-latitude-and-longitude.csv')
 		df_geo = df_geo.drop(columns=['Timezone', 'Daylight savings time flag', 'Zip', 'geopoint'], axis=1)
 		df_output = pd.merge(df, df_geo, on=['City','State'], how='left')
 

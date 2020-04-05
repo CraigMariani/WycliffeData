@@ -55,7 +55,8 @@ class Map:
 		for attribute in selection:
 			trace_map.append(go.Choroplethmapbox(
 				geojson=US_data,
-				locations=df['PostalCode_y'].tolist(),
+				# locations=df['PostalCode_y'].tolist(),
+				locations=df['PostalCode'].tolist(),
 				z = df[attribute].tolist(),
 				colorscale=pl_deep,
 				text=addresses,
@@ -71,7 +72,7 @@ class Map:
 		trace_map[0]['visible'] = True
 		# print(trace_map[0]['locations'])
 		# print(trace_map[0]['text'])
-		print('Trace Map')
+		# print('Trace Map')
 		# print(trace_map)
 		return trace_map
 
@@ -91,8 +92,8 @@ class Map:
 		df = df_imported
 		# df = cln.full_cleaner(df_imported)
 		df = pd.DataFrame(df)
-		print('Showing contents::::')
-		print(df.head())
+		# print('Showing contents::::')
+		# print(df.head())
 		selection = list(df.columns)
 		addresses = df['Address'].str.title().tolist()
 		

@@ -23,15 +23,15 @@ if __name__ == '__main__':
 
 	print('finsihedformating data')
 	# test clustering algorithm
-	df = cl.k_minimizer(df)
-	df.to_csv('../../Data/ProductionData/kmeans_clustering_input.csv')
-	max_clusters = df.shape[0]
-	# X = ml.normalize_data(df)
-	n_clusters = 5
-	# ml.test_start(df, n_clusters)
-	df_centroids = ml.start(df, n_clusters)
+	# df = cl.k_minimizer(df)
+	# df.to_csv('../../Data/ProductionData/kmeans_clustering_input.csv')
+	# max_clusters = df.shape[0]
+	# # X = ml.normalize_data(df)
+	# n_clusters = 5
+	# # ml.test_start(df, n_clusters)
+	# df_centroids = ml.start(df, n_clusters)
 
-	df_centroids.to_csv('../../Data/ProductionData/centroids.csv')
+	# df_centroids.to_csv('../../Data/ProductionData/centroids.csv')
 
 
 	### FOR FIGURING OUT OPTIMAL NUMBER OF CLUSTERS ###

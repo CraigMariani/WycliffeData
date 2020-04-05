@@ -15,7 +15,8 @@ class MeansLatLong():
 		X = MeansLatLong.normalize_data(df)
 		y_out, k_means, model = MeansLatLong.cluster(n_clusters, X, df.shape[0])
 		centroids = model.cluster_centers_
-		
+		print('model cluster centers {}'.format(model.cluster_centers_))
+		print('centroids {}'.format(centroids))
 		# df_centroids = format(df.columns, centroids)
 		df_centroids = MeansLatLong.to_coordinates(df.columns, centroids)
 		return df_centroids
