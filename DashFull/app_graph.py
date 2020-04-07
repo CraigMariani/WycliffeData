@@ -13,59 +13,73 @@ import dash_table
 
 import pandas as pd
 
+
+pl_deep=[[0.0, 'rgb(253, 253, 204)'],
+		[0.1, 'rgb(201, 235, 177)'],
+		[0.2, 'rgb(145, 216, 163)'],
+		[0.3, 'rgb(102, 194, 163)'],
+		[0.4, 'rgb(81, 168, 162)'],
+		[0.5, 'rgb(72, 141, 157)'],
+		[0.6, 'rgb(64, 117, 152)'],
+		[0.7, 'rgb(61, 90, 146)'],
+		[0.8, 'rgb(65, 64, 123)'],
+		[0.9, 'rgb(55, 44, 80)'],
+		[1.0, 'rgb(39, 26, 44)']]
+
 class Graph:
 
-	# parsing data from uploader
-	def parse_data(contents, filename):
-	    content_type, content_string = contents.split(',')
+	# create layout for graph
+	def layout_setup():
 
-	    decoded = base64.b64decode(content_string)
-	    try:
-	        if 'csv' in filename:
-	            # Assume that the user uploaded a CSV or TXT file
-	            df = pd.read_csv(
-	                io.StringIO(decoded.decode('utf-8'))).sample(frac=0.25)
-	        elif 'xls' in filename:
-	            # Assume that the user uploaded an excel file
-	            df = pd.read_excel(io.BytesIO(decoded))
-	        elif 'txt' or 'tsv' in filename:
-	            # Assume that the user upl, delimiter = r'\s+'oaded an excel file
-	            df = pd.read_csv(
-	                io.StringIO(decoded.decode('utf-8')), delimiter = r'\s+')
-	    except Exception as e:
-	        print(e)
-	        return html.Div([
-	            'There was an error processing this file.'
-	        ])
+		layout = go.Layout(
+			title = {'text':'Ministry Monthly Budget Amount vs End Date',
+				'font': {'size':28, 
+				'family':'Arial'}},
+			width=1500,
+			height=500,
+			autosize = False,
+			xaxis={
+				'title':'EndDate',
+				'zeroline': False,
+				"showline": False,
+				"showticklabels":True,
+				'showgrid':True,
+				'domain': [0, 1],
+				'side': 'right',
+				# 'anchor': 'x2',
+				},
+			yaxis={
+				'title':'MinistryMonthlyBudgetAmount',
+				'domain': [0, 1],
+		        # 'anchor': 'y2',
+				'autorange': 'reversed',
+			},
 
-	    return df
+		margin=dict(l=100, r=20, t=70, b=70),
+			paper_bgcolor='rgb(204, 204, 204)',
+	    	plot_bgcolor='rgb(204, 204, 204)',
+            )
+		return layout
 
-	@app.callback(Output('Mygraph', 'figure'),
-            [
-                Input('upload-data', 'contents'),
-                Input('upload-data', 'filename')
-            ])
+	# return data to be traced
+	def graph_trace(df):
+		trace_graph = []
+		x = []
+		y = []
+		df = df.sort_values(by=['EndDate'])
+		x = df['EndDate']
+		y = df['MinistryMonthlyBudgetAmount']
 
-	# update line graph
-	def update_graph(contents, filename):
-	    fig = {
-	        'layout': go.Layout(
-	            plot_bgcolor=colors["graphBackground"],
-	            paper_bgcolor=colors["graphBackground"])
-	    }
-
-	    if contents:
-	        contents = contents[0]
-	        filename = filename[0]
-	        df = parse_data(contents, filename)
-	        df = df.set_index(df.columns[0])
-	        fig['data'] = df.iplot(asFigure=True, kind='scatter', mode='lines+markers', size=1)
+		trace_graph.append(go.Scatter( x=x, y=y , mode='markers',
+			marker=dict(
+	            	color='rgba(91, 207, 135, 0.3)',
+	            	line=dict(
+	                	color='rgba(91, 207, 135, 2.0)',
+	                	width=0.5),
+	        	),))
 
 
-	    return fig
+		return trace_graph
 
-	@app.callback(Output('output-data-upload', 'children'),
-        [
-            Input('upload-data', 'contents'),
-            Input('upload-data', 'filename')
-        ])
+
+	

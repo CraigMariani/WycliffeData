@@ -29,7 +29,7 @@ from urllib.request import urlopen
 # local custom files
 from production_cleaner import Cleaner as cln
 # from app_table import Table as tbl
-# from app_graph import Graph as grph
+from app_graph import Graph as grph
 from app_scatter import Scatter as scttr
 from app_map import Map as mp
 
@@ -83,6 +83,11 @@ app.layout = html.Div([
 		dcc.Graph(
 			id = 'graph_2'
 			),
+
+		# graph
+		dcc.Graph(
+			id = 'graph_3'
+			),
 		html.Div(id='output-data-upload')
 		])
 
@@ -120,6 +125,7 @@ def parse_data(contents, filename):
 	df.to_csv('../../Data/OutsideData/output.csv')
 	return df
 
+# call back talks to update_map below
 @app.callback(Output('graph_1', 'figure'),
 	[
 		Input('upload-data', 'contents'),
@@ -161,12 +167,15 @@ def update_map(contents, filename):
 
 	return fig
 
+# callback talks to scatter plot (graph_2) below 
+# recieves input from uploader (upload-data)
 @app.callback(Output('graph_2', 'figure'),
 	[
 		Input('upload-data', 'contents'),
 		Input('upload-data', 'filename')
 	])
 
+# sets up plot for latitudes and longitudes and machine learning algorithm
 def update_scatter(contents, filename):
 	print('updating scatter plot')
 
@@ -199,6 +208,44 @@ def update_scatter(contents, filename):
 
 	return fig
 
+
+@app.callback(Output('graph_3', 'figure'),
+	[
+		Input('upload-data', 'contents'),
+		Input('upload-data', 'filename')
+	])
+
+def update_graph(contents, filename):
+	print('updating graph')
+
+	if contents:
+		#***********************************
+		# parse the data uploaded into a pandas dataframe
+		contents = contents[0]
+		filename = filename[0]
+		df = parse_data(contents, filename)
+		# print('showing data')
+		# print(df.head())
+
+		#**********************************
+		# Cleaning data
+		df = cln.full_cleaner(df) 
+		df = cln.feature_engineering(df)
+		#**********************************
+		# Formatting data
+		layout = grph.layout_setup() # create a new layout for scatter plot
+		print(layout)
+		trace_graph = grph.graph_trace(df) # return a new list of latittude and longitudes for scatter plot
+		print(trace_graph)
+		fig=go.Figure(data=trace_graph, layout=layout) # return a new figure based on the layout and the data created 
+		print(fig)
+
+	else:
+		fig=go.Figure(
+			data=None,
+			layout=None)
+
+	return fig
 if __name__ == '__main__':
 	app.run_server(debug=False)
 	# app.run_server(debug=True)
